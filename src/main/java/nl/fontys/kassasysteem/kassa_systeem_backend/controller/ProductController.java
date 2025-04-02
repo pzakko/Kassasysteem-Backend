@@ -26,7 +26,7 @@ public class ProductController {
         return service.getById(id);
     }
 
-    @PostMapping("/create-product")
+    @PostMapping
     public ProductDto create(@RequestBody ProductDto dto) {
         return service.save(dto);
     }
