@@ -1,0 +1,60 @@
+[33mcommit a27e0061ca92b778bb25925fe59f64aa2b1cf4d9[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Wed Apr 2 23:42:25 2025 +0200
+
+    CROS config is toegevoegd en productController is aangepast om met front-end te werken
+
+[33mcommit 56af1e0e2b0ce198ac4fd24fbac30abc5affcb8e[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 22:02:12 2025 +0200
+
+    Werkende ProductController
+
+[33mcommit 5750339a0cdbafd3487c2666a72983c153e6f7e3[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 21:42:30 2025 +0200
+
+    ProductService en ProductserviceImp zijn toegevoegd
+
+[33mcommit 07470d167dd13180dd36900ba25a9da9bbaf231c[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 21:37:27 2025 +0200
+
+    Product (Repository + Mapper + DTO) zijn toegevoegd
+
+[33mcommit f691e9f9fca05a5f7af1f92784e23f8bf4665e10[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 20:48:25 2025 +0200
+
+    Werkende configuratie voor postgreSQL
+
+[33mcommit ed7b25e7ff757924b616ef3a3440b306f0174453[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 18:32:50 2025 +0200
+
+    Database postgreSQL opgezet
+
+[33mcommit 4abec87c7dbb335a1dd46fbc1b9d1dc099b760c0[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 17:42:56 2025 +0200
+
+    Product model is aangemaakt
+
+[33mcommit 09d4b9830c62bf994f778543152e8438af7b321e[m
+Merge: 93a70fc a2d7de4
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 15:57:40 2025 +0200
+
+    eerste commit
+
+[33mcommit 93a70fc828fd106c79ec18bef955cb6f9e0ef858[m
+Author: Piter Zakko <i475005@fhict.nl>
+Date:   Tue Apr 1 15:42:20 2025 +0200
+
+    Eerste commit - koppeling met GitLab repo
+
+[33mcommit a2d7de4141495461214f4af5e3afed639405e347[m
+Author: Zakko,Piter P. <p.zakko@student.fontys.nl>
+Date:   Tue Apr 1 13:20:40 2025 +0000
+
+    Initial commit
