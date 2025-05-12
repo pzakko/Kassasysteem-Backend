@@ -5,6 +5,7 @@ import nl.fontys.kassasysteem.kassa_systeem_backend.mapper.ProductMapper;
 import nl.fontys.kassasysteem.kassa_systeem_backend.model.Product;
 import nl.fontys.kassasysteem.kassa_systeem_backend.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 
@@ -12,9 +13,11 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repo;
+    private final SimpMessagingTemplate messagingTemplate; // ✅ WebSocket template
 
-    public ProductServiceImpl(ProductRepository repo) {
+    public ProductServiceImpl(ProductRepository repo, SimpMessagingTemplate messagingTemplate) {
         this.repo = repo;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -30,7 +33,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto save(ProductDto dto) {
         Product entity = ProductMapper.toEntity(dto);
-        return ProductMapper.toDto(repo.save(entity));
+        ProductDto saved = ProductMapper.toDto(repo.save(entity));
+
+        // ✅ AUTOMATISCHE BROADCAST NA SAVE
+        messagingTemplate.convertAndSend("/topic/products", saved);
+
+        return saved;
     }
 
     @Override
@@ -56,3 +64,4 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 }
+

@@ -5,6 +5,7 @@ import nl.fontys.kassasysteem.kassa_systeem_backend.dto.ProductDto;
 import java.util.List;
 
 public interface ProductService {
+
     List<ProductDto> getAll();
     ProductDto getById(int id);
     ProductDto save(ProductDto dto);

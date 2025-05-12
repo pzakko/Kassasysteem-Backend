@@ -18,10 +18,15 @@
 	<name>KassaSysteemBackend</name>
 	<description>Een kassasysteem met Spring Boot en Vue.js</description>
 
+<!--	<properties>-->
+<!--		<java.version>23</java.version>-->
+<!--		<maven.compiler.release>23</maven.compiler.release>-->
+<!--	</properties>-->
+
 	<properties>
-		<java.version>23</java.version>
-		<maven.compiler.release>23</maven.compiler.release>
+		<java.version>17</java.version>
 	</properties>
+
 
 	<dependencies>
 		<!-- Spring Boot Starters -->
@@ -56,6 +61,12 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
 
 		<!-- Testing -->
 		<dependency>
