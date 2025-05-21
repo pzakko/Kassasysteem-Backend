@@ -24,4 +24,12 @@ public class ProductWebSocketController {
         // Return het opgeslagen product (met id, datum, etc.) naar alle clients
         return savedProduct;
     }
+
+    @MessageMapping("/product/delete")
+    @SendTo("/topic/producten-verwijderd")
+    public int deleteViaWebSocket(int id) {
+        productService.delete(id);
+        return id;
+    }
+
 }
