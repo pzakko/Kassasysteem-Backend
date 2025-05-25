@@ -2,74 +2,80 @@ package nl.fontys.kassasysteem.kassa_systeem_backend.controller;
 
 import nl.fontys.kassasysteem.kassa_systeem_backend.dto.AuthRequest;
 import nl.fontys.kassasysteem.kassa_systeem_backend.dto.AuthResponse;
+import nl.fontys.kassasysteem.kassa_systeem_backend.enums.Rol;
 import nl.fontys.kassasysteem.kassa_systeem_backend.model.User;
 import nl.fontys.kassasysteem.kassa_systeem_backend.repository.UserRepository;
-import nl.fontys.kassasysteem.kassa_systeem_backend.config.JwtTokenUtil;
+import nl.fontys.kassasysteem.kassa_systeem_backend.service.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.AuthenticationException;
-
+import org.springframework.security.core.userdetails.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(
             AuthenticationManager authenticationManager,
-            JwtTokenUtil jwtTokenUtil,
+            JwtService jwtService,
             UserDetailsService userDetailsService,
             UserRepository userRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.authenticationManager = authenticationManager;
-        this.jwtTokenUtil = jwtTokenUtil;
+        this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // 🔐 LOGIN ENDPOINT
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        System.out.println("LOGIN voor: " + request.getUsername()); // 👈 hier!
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
 
-            UserDetails user = userDetailsService.loadUserByUsername(request.getUsername());
-            String token = jwtTokenUtil.generateToken(user);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+            String jwt = jwtService.generateToken(userDetails);
 
-            return ResponseEntity.ok(new AuthResponse(token));
+            return ResponseEntity.ok(new AuthResponse(jwt));
         } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("❌ Ongeldige inloggegevens");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("❌ Ongeldige gebruikersnaam of wachtwoord");
         }
     }
 
-    // 🧾 REGISTER ENDPOINT
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody AuthRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("⚠️ Gebruikersnaam bestaat al");
         }
 
+//        User newUser = User.builder()
+//                .username(request.getUsername())
+//                .password(passwordEncoder.encode(request.getPassword()))
+//                .role(Rol.GEBRUIKER)  // ✅ Enum gebruiken
+//                .build();
+
         User newUser = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role("ROLE_USER")
+                .role(Rol.valueOf(request.getRole())) // ✅ Dit gebruikt de Enum correct
                 .build();
+
 
         userRepository.save(newUser);
 
-        return ResponseEntity.ok("✅ Gebruiker succesvol aangemaakt");
+        return ResponseEntity.ok("✅ Gebruiker succesvol geregistreerd");
     }
 }

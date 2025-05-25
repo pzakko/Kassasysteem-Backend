@@ -1,7 +1,7 @@
 package nl.fontys.kassasysteem.kassa_systeem_backend.model;
-
 import jakarta.persistence.*;
 import lombok.*;
+import nl.fontys.kassasysteem.kassa_systeem_backend.enums.Rol;
 
 @Entity
 @Data
@@ -18,5 +18,7 @@ public class User {
     private String username;
 
     private String password;
-    private String role;
+
+    @Enumerated(EnumType.STRING)
+    private Rol role;
 }

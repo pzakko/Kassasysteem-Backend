@@ -1,14 +1,15 @@
 package nl.fontys.kassasysteem.kassa_systeem_backend.service;
 
-import nl.fontys.kassasysteem.kassa_systeem_backend.repository.UserRepository;
 import nl.fontys.kassasysteem.kassa_systeem_backend.model.User;
+import nl.fontys.kassasysteem.kassa_systeem_backend.repository.UserRepository;
 import org.springframework.security.core.userdetails.*;
-import org.springframework.stereotype.Service;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository repo;
 
@@ -18,9 +19,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = repo.findByUsername(username)
+        User gebruiker = repo.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Gebruiker niet gevonden"));
+
+        // Voeg "ROLE_" toe voor Spring Security
+        String role = "ROLE_" + gebruiker.getRole().name();
+
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(), user.getPassword(), java.util.List.of(new SimpleGrantedAuthority(user.getRole())));
+                gebruiker.getUsername(),
+                gebruiker.getPassword(),
+                List.of(new SimpleGrantedAuthority(role))
+        );
     }
 }

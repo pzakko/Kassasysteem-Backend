@@ -2,6 +2,7 @@ package nl.fontys.kassasysteem.kassa_systeem_backend.controller;
 
 import nl.fontys.kassasysteem.kassa_systeem_backend.dto.ProductDto;
 import nl.fontys.kassasysteem.kassa_systeem_backend.service.ProductService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,8 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('GEBRUIKER') or hasRole('ADMIN')")
+
     public List<ProductDto> getAll() {
         return service.getAll();
     }
