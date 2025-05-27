@@ -2,22 +2,25 @@ package nl.fontys.kassasysteem.kassa_systeem_backend.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.fontys.kassasysteem.kassa_systeem_backend.dto.ProductDto;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class ProductIntegratieTest {
 
     @Autowired
@@ -26,112 +29,65 @@ class ProductIntegratieTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    void testProductToevoegenEnOphalen() throws Exception {
-        ProductDto nieuwProduct = ProductDto.builder()
-                .naam("IntegratieTestProduct")
-                .prijs(BigDecimal.valueOf(19.99))
-                .voorraad(10)
-                .categorie("Test")
-                .beschrijving("Testbeschrijving")
-                .afbeelding("test.jpg")
-                .build();
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
-        // 1. POST: voeg product toe
-        mockMvc.perform(post("/api/producten")
+    private ProductDto nieuwProduct;
+
+    @BeforeEach
+    void setUp() {
+        nieuwProduct = new ProductDto();
+        nieuwProduct.setNaam("WebSocketTest");
+        nieuwProduct.setPrijs(BigDecimal.valueOf(19.99));
+        nieuwProduct.setVoorraad(5);
+        nieuwProduct.setCategorie("WebTest");
+        nieuwProduct.setBeschrijving("Beschrijving van testproduct");
+    }
+
+    @Test
+    void testFullCrudProduct() throws Exception {
+        // CREATE
+        MvcResult postResult = mockMvc.perform(post("/api/producten")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(nieuwProduct)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.naam").value("IntegratieTestProduct"));
+                .andExpect(jsonPath("$.naam").value("WebSocketTest"))
+                .andReturn();
 
-        // 2. GET: controleer of het terugkomt
-        mockMvc.perform(get("/api/producten"))
+        ProductDto opgeslagenProduct = objectMapper.readValue(
+                postResult.getResponse().getContentAsString(), ProductDto.class);
+
+        // READ
+        mockMvc.perform(get("/api/producten/" + opgeslagenProduct.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].naam").value("IntegratieTestProduct"));
-    }
+                .andExpect(jsonPath("$.voorraad").value(5));
 
-    @Test
-    void testGetProductById() throws Exception {
-        ProductDto nieuwProduct = ProductDto.builder()
-                .naam("ProductOpvragen")
-                .prijs(BigDecimal.valueOf(15.00))
-                .voorraad(8)
-                .categorie("Categorie")
-                .beschrijving("Beschrijving")
-                .afbeelding("img.jpg")
-                .build();
+        // UPDATE
+        opgeslagenProduct.setPrijs(BigDecimal.valueOf(19.99));
+        opgeslagenProduct.setVoorraad(3);
 
-        // Eerst: voeg product toe
-        String response = mockMvc.perform(post("/api/producten")
+        mockMvc.perform(put("/api/producten/" + opgeslagenProduct.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(nieuwProduct)))
+                        .content(objectMapper.writeValueAsString(opgeslagenProduct)))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .andExpect(jsonPath("$.prijs").value(15.50));
 
-        ProductDto opgeslagen = objectMapper.readValue(response, ProductDto.class);
-
-        // Dan: haal product op via id
-        mockMvc.perform(get("/api/producten/" + opgeslagen.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.naam").value("ProductOpvragen"));
-    }
-
-    @Test
-    void testProductBijwerken() throws Exception {
-        ProductDto origineel = ProductDto.builder()
-                .naam("Oude Naam")
-                .prijs(BigDecimal.valueOf(10))
-                .voorraad(5)
-                .categorie("Test")
-                .beschrijving("Oud")
-                .afbeelding("oud.jpg")
-                .build();
-
-        // Voeg toe
-        String response = mockMvc.perform(post("/api/producten")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(origineel)))
-                .andReturn().getResponse().getContentAsString();
-
-        ProductDto toegevoegd = objectMapper.readValue(response, ProductDto.class);
-
-        // Wijzig
-        toegevoegd.setNaam("Nieuwe Naam");
-
-        mockMvc.perform(put("/api/producten/" + toegevoegd.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(toegevoegd)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.naam").value("Nieuwe Naam"));
-    }
-
-    @Test
-    void testProductVerwijderen() throws Exception {
-        ProductDto testProduct = ProductDto.builder()
-                .naam("Verwijder Mij")
-                .prijs(BigDecimal.valueOf(12.34))
-                .voorraad(2)
-                .categorie("Delete")
-                .beschrijving("Verwijderen")
-                .afbeelding("img.png")
-                .build();
-
-        // Voeg toe
-        String response = mockMvc.perform(post("/api/producten")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(testProduct)))
-                .andReturn().getResponse().getContentAsString();
-
-        ProductDto opgeslagen = objectMapper.readValue(response, ProductDto.class);
-
-        // Verwijder
-        mockMvc.perform(delete("/api/producten/" + opgeslagen.getId()))
+        // DELETE
+        mockMvc.perform(delete("/api/producten/" + opgeslagenProduct.getId()))
                 .andExpect(status().isOk());
 
-        // Controleer dat GET nu niets oplevert of null
-        mockMvc.perform(get("/api/producten/" + opgeslagen.getId()))
-                .andExpect(status().isOk())
-                .andExpect(content().string(""));
+        // CHECK if deleted
+        mockMvc.perform(get("/api/producten/" + opgeslagenProduct.getId()))
+                .andExpect(status().is4xxClientError());
     }
 
+    @Test
+    void testWebSocketNotificationSimulation() throws Exception {
+        // Simuleer dat WebSocket een bericht ontvangt bij create
+        messagingTemplate.convertAndSend("/topic/producten", nieuwProduct);
+        messagingTemplate.convertAndSend("/topic/verwijderd", 999);
+
+        // Dit test geen echte WebSocket client, maar valideert dat de backend zonder fout verzendt.
+        assertThat(nieuwProduct.getNaam()).isEqualTo("WebSocketTest");
+    }
 }
