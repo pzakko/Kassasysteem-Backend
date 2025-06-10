@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenUtil {
@@ -42,5 +43,16 @@ public class JwtTokenUtil {
                 .build().parseClaimsJws(token).getBody().getExpiration();
         return exp.before(new Date());
     }
+
+    private String createTestToken(String username, String role) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("roles", List.of(role)) // deze claim gebruik je misschien via @PreAuthorize
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
+                .signWith(Keys.hmacShaKeyFor("DitIsEenGoedeTestSleutelVoorJWTMetMeerDan32Tekens!".getBytes()), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 }
 

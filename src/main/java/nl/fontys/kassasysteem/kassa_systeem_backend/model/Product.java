@@ -38,7 +38,4 @@ public class Product {
 
     @Column(name = "toegevoegd_op")
     private LocalDate toegevoegdOp = LocalDate.now();
-
-
-    //test
 }

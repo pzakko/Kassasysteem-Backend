@@ -4,8 +4,9 @@ import nl.fontys.kassasysteem.kassa_systeem_backend.dto.ProductDto;
 import nl.fontys.kassasysteem.kassa_systeem_backend.mapper.ProductMapper;
 import nl.fontys.kassasysteem.kassa_systeem_backend.model.Product;
 import nl.fontys.kassasysteem.kassa_systeem_backend.repository.ProductRepository;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repo;
-    private final SimpMessagingTemplate messagingTemplate; // ✅ WebSocket template
+    private final SimpMessagingTemplate messagingTemplate;
 
     public ProductServiceImpl(ProductRepository repo, SimpMessagingTemplate messagingTemplate) {
         this.repo = repo;
@@ -22,12 +23,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDto> getAll() {
-        return repo.findAll().stream().map(ProductMapper::toDto).toList();
+        return repo.findAll().stream()
+                .map(ProductMapper::toDto)
+                .toList();
     }
 
     @Override
     public ProductDto getById(int id) {
-        return repo.findById(id).map(ProductMapper::toDto).orElse(null);
+        return repo.findById(id)
+                .map(ProductMapper::toDto)
+                .orElse(null);
     }
 
     @Override
@@ -35,7 +40,7 @@ public class ProductServiceImpl implements ProductService {
         Product entity = ProductMapper.toEntity(dto);
         ProductDto saved = ProductMapper.toDto(repo.save(entity));
 
-        // ✅ AUTOMATISCHE BROADCAST NA SAVE
+        // Broadcast via WebSocket
         messagingTemplate.convertAndSend("/topic/products", saved);
 
         return saved;
@@ -44,24 +49,27 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void delete(int id) {
         repo.deleteById(id);
+        messagingTemplate.convertAndSend("/topic/verwijderd", id);
     }
 
     @Override
     public List<ProductDto> searchByNaam(String naam) {
-        return repo.findByNaamContainingIgnoreCase(naam).stream().map(ProductMapper::toDto).toList();
+        return repo.findByNaamContainingIgnoreCase(naam).stream()
+                .map(ProductMapper::toDto)
+                .toList();
     }
 
     @Override
     public List<ProductDto> filterByCategorie(String categorie) {
-        return repo.findByCategorieIgnoreCase(categorie).stream().map(ProductMapper::toDto).toList();
+        return repo.findByCategorieIgnoreCase(categorie).stream()
+                .map(ProductMapper::toDto)
+                .toList();
     }
 
     @Override
     public List<ProductDto> searchAndFilter(String naam, String categorie) {
-        return repo.findByNaamContainingIgnoreCaseAndCategorieIgnoreCase(naam, categorie)
-                .stream()
+        return repo.findByNaamContainingIgnoreCaseAndCategorieIgnoreCase(naam, categorie).stream()
                 .map(ProductMapper::toDto)
                 .toList();
     }
 }
-
