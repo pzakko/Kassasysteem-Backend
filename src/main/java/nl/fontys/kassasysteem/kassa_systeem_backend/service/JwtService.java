@@ -5,6 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import nl.fontys.kassasysteem.kassa_systeem_backend.model.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -44,14 +45,41 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+//    public String generateToken(UserDetails userDetails) {
+//        return Jwts.builder()
+//                .setSubject(userDetails.getUsername())
+//                .setIssuedAt(new Date())
+//                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+
+//    public String generateToken(UserDetails userDetails) {
+//        User user = (User) userDetails;
+//
+//        return Jwts.builder()
+//                .setSubject(user.getUsername())
+//                .claim("role", user.getRole().name()) // 👈 voeg rol toe
+//                .setIssuedAt(new Date())
+//                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
+
+
+
 
     public boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);

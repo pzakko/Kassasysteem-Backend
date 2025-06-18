@@ -39,7 +39,7 @@ public class ProductController {
         return nieuwProduct;
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('GEBRUIKER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ProductDto update(@PathVariable int id, @RequestBody ProductDto dto) {
         dto.setId(id);
