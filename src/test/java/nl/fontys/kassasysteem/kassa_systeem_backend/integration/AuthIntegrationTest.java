@@ -109,5 +109,5 @@ public class AuthIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string(containsString("❌ Ongeldige gebruikersnaam of wachtwoord")));
     }
-    
+
 }
