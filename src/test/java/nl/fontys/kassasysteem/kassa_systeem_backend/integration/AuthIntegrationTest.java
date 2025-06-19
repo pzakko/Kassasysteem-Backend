@@ -109,12 +109,5 @@ public class AuthIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().string(containsString("❌ Ongeldige gebruikersnaam of wachtwoord")));
     }
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-            return new BCryptPasswordEncoder();
-        }
-    }
+    
 }
