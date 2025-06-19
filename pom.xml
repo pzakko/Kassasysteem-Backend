@@ -18,10 +18,6 @@
 	<name>KassaSysteemBackend</name>
 	<description>Een kassasysteem met Spring Boot en Vue.js</description>
 
-<!--	<properties>-->
-<!--		<java.version>23</java.version>-->
-<!--		<maven.compiler.release>23</maven.compiler.release>-->
-<!--	</properties>-->
 
 	<properties>
 		<java.version>17</java.version>
